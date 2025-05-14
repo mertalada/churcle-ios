@@ -12,6 +12,7 @@ extension UITabBar {
 
 struct MainTabView: View {
     @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedTab = 0
     @State private var matches: Set<User> = []
     @State private var likes: Int = 0
@@ -157,59 +158,48 @@ struct MainTabView: View {
                         }
                     }
                 }
+                .onChange(of: colorScheme) { _, _ in
+                    // Update when system color scheme changes
+                    updateTabBarAppearance()
+                }
+                .forceRefreshWithThemeManager(themeManager) // Use the correct instance
                 .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
                 .ignoresSafeArea(edges: [.bottom])
+                // Attach sheets to TabView for proper presentation
+                .sheet(isPresented: $showChatSheet) {
+                    if let user = selectedChatUser {
+                        ChatSheetView(
+                            user: user,
+                            isPresented: $showChatSheet,
+                            lastMessage: Binding(
+                                get: { lastMessages[user.id] },
+                                set: { lastMessages[user.id] = $0 }
+                            ),
+                            messages: Binding(
+                                get: { messageHistory[user.id] ?? [] },
+                                set: { messageHistory[user.id] = $0 }
+                            )
+                        )
+                        .presentationDetents([.fraction(0.95)])
+                        .presentationCornerRadius(30)
+                        .presentationBackground(Color.sheetBackground)
+                    }
+                }
+                .sheet(isPresented: $isMessageSheetPresented) {
+                    if let selectedMessageUser = selectedMessageUser {
+                        MessageSheetView(
+                            user: selectedMessageUser,
+                            isPresented: $isMessageSheetPresented
+                        )
+                        .presentationDetents([.fraction(0.95)])
+                        .presentationCornerRadius(30)
+                        .presentationBackground(Color.sheetBackground)
+                    }
+                }
             }
             .zIndex(0) // Lower ZIndex for the TabView
             
-            // Show chat sheet when needed
-            if showChatSheet, let user = selectedChatUser {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        showChatSheet = false
-                    }
-                    .zIndex(1)
-                
-                GeometryReader { geometry in
-                    ChatSheetView(
-                        user: user,
-                        isPresented: $showChatSheet,
-                        lastMessage: Binding(
-                            get: { lastMessages[user.id] },
-                            set: { lastMessages[user.id] = $0 }
-                        ),
-                        messages: Binding(
-                            get: { messageHistory[user.id] ?? [] },
-                            set: { messageHistory[user.id] = $0 }
-                        )
-                    )
-                    .frame(height: geometry.size.height * 0.8)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .transition(.move(edge: .bottom))
-                }
-                .ignoresSafeArea()
-                .zIndex(2)
-            }
-            
-            // MessageSheetView implementation
-            if isMessageSheetPresented, let selectedMessageUser = selectedMessageUser {
-                // Full-screen overlay
-                ZStack(alignment: .bottom) {
-                    // Custom positioned sheet
-                  GeometryReader { geometry in
-                    MessageSheetView(
-                        user: selectedMessageUser,
-                        isPresented: $isMessageSheetPresented
-                    )
-                    .frame(height: geometry.size.height * 0.8)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .transition(.move(edge: .bottom))
-                }
-                .ignoresSafeArea()
-                .zIndex(2)
-                }
-            }
+            // Removed separate implementations of sheets since they are now properly attached to TabView
         }
         .onChange(of: showChatSheet) { oldValue, newValue in
             if !newValue {

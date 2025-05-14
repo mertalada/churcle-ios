@@ -42,10 +42,14 @@ struct NavigationTitleView: View {
                         .foregroundColor(themeManager.isDarkMode ? .white : .black)
                 }
                 .sheet(isPresented: $showSettings) {
-                    ProfileSettingsSheetView()
-                        .presentationDetents([.fraction(0.95)])
-                        .presentationCornerRadius(30)
-                        .presentationBackground(Color.sheetBackground)
+                    ZStack {
+                        ProfileSettingsSheetView(isSheetShowing: $showSettings)
+                            .id("ProfileSettingsSheetView")  // Give a stable ID to preserve state
+                            .presentationDetents([.fraction(0.95)])
+                            .presentationCornerRadius(30)
+                            .presentationBackground(themeManager.isDarkMode ? Color.clear : Color.sheetBackground)
+                            .interactiveDismissDisabled(true)  // Disable interactive dismissal
+                    }
                 }
                 
             case .options:

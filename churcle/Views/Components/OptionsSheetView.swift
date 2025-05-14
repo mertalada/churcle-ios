@@ -14,6 +14,16 @@ struct OptionsSheetView: View {
     let genderOptions = ["Kadın", "Erkek", "Hepsi"]
     let lookingForOptions = ["friends", "married", "relationship", "hanging out", "undecided"]
     
+    // Container arka plan rengi
+    var containerBackgroundColor: Color {
+        return themeManager.isDarkMode ? Color(UIColor.systemGray6) : Color.white
+    }
+    
+    // Sayfa arka plan rengi
+    var sheetBackgroundColor: Color {
+        return themeManager.isDarkMode ? Color.black : Color.sheetBackground
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             // Header
@@ -54,8 +64,10 @@ struct OptionsSheetView: View {
                                 .padding(.horizontal)
                         }
                         .padding(.vertical, 10)
-                        .background(Color.sheetBackground)
+                        .background(containerBackgroundColor)
                         .cornerRadius(15)
+                        .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                radius: 5, x: 0, y: 2)
                         .padding(.horizontal)
                     }
                     
@@ -80,8 +92,10 @@ struct OptionsSheetView: View {
                                 .padding(.horizontal)
                         }
                         .padding(.vertical, 10)
-                        .background(Color.sheetBackground)
+                        .background(containerBackgroundColor)
                         .cornerRadius(15)
+                        .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                radius: 5, x: 0, y: 2)
                         .padding(.horizontal)
                     }
                     
@@ -113,8 +127,10 @@ struct OptionsSheetView: View {
                         }
                         .padding(.horizontal)
                         .padding(.vertical, 10)
-                        .background(Color.sheetBackground)
+                        .background(containerBackgroundColor)
                         .cornerRadius(15)
+                        .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                radius: 5, x: 0, y: 2)
                         .padding(.horizontal)
                     }
                     
@@ -151,8 +167,10 @@ struct OptionsSheetView: View {
                                 }
                             }
                         }
-                        .background(Color.sheetBackground)
+                        .background(containerBackgroundColor)
                         .cornerRadius(15)
+                        .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                radius: 5, x: 0, y: 2)
                         .padding(.horizontal)
                     }
                     
@@ -189,8 +207,10 @@ struct OptionsSheetView: View {
                                 }
                             }
                         }
-                        .background(Color.sheetBackground)
+                        .background(containerBackgroundColor)
                         .cornerRadius(15)
+                        .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                radius: 5, x: 0, y: 2)
                         .padding(.horizontal)
                     }
                     
@@ -208,8 +228,10 @@ struct OptionsSheetView: View {
                         }
                         .toggleStyle(SwitchToggleStyle(tint: .blue))
                         .padding()
-                        .background(Color.sheetBackground)
+                        .background(containerBackgroundColor)
                         .cornerRadius(15)
+                        .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                radius: 5, x: 0, y: 2)
                         .padding(.horizontal)
                     }
                     
@@ -249,15 +271,17 @@ struct OptionsSheetView: View {
                             .padding(.horizontal)
                             .padding(.vertical, 12)
                     }
-                    .background(Color.sheetBackground)
+                    .background(containerBackgroundColor)
                     .cornerRadius(15)
+                    .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                            radius: 5, x: 0, y: 2)
                     .padding(.horizontal)
                     
                     Spacer(minLength: 50)
                 }
             }
         }
-        .background(Color.sheetBackground)
+        .background(sheetBackgroundColor)
         .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
         .onAppear {
             // Load user profile data

@@ -51,7 +51,11 @@ struct churcleApp: App {
             MainTabView()
                 .environmentObject(themeManager)
                 .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
+                .forceRefreshWithThemeManager(themeManager)
                 .onAppear {
+                    // Preserve sheet presentation on app startup
+                    setupSheetDismissalPrevention()
+                    
                     // Force theme to apply on app launch with delay to ensure UI is ready
                     themeManager.applyTheme()
                     
@@ -63,7 +67,52 @@ struct churcleApp: App {
                 .onChange(of: themeManager.isDarkMode) { _, _ in
                     // This ensures that every time dark mode changes, UI updates immediately
                     themeManager.applyTheme()
+                    
+                    // Prevent sheets from being dismissed during theme changes
+                    setupSheetDismissalPrevention()
+                    
+                    // Ensure presented sheets remain visible
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        if #available(iOS 15.0, *) {
+                            for connectedScene in UIApplication.shared.connectedScenes {
+                                if let windowScene = connectedScene as? UIWindowScene {
+                                    for window in windowScene.windows {
+                                        if let presentedVC = window.rootViewController?.presentedViewController {
+                                            // Force preserve sheets
+                                            presentedVC.view.setNeedsLayout()
+                                            presentedVC.view.layoutIfNeeded()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+        }
+    }
+    
+    /// Helper function to prevent sheet dismissal during theme changes
+    private func setupSheetDismissalPrevention() {
+        // This extends UIPresentationController to prevent automatic dismissal
+        if #available(iOS 15.0, *) {
+            for connectedScene in UIApplication.shared.connectedScenes {
+                if let windowScene = connectedScene as? UIWindowScene {
+                    for window in windowScene.windows {
+                        if let presentedVC = window.rootViewController?.presentedViewController,
+                           let sheetController = presentedVC.presentationController as? UISheetPresentationController {
+                            // Explicitly prevent dismissal during theme changes
+                            DispatchQueue.main.async {
+                                sheetController.animateChanges {
+                                    // Make sure detents stay set
+                                    if sheetController.selectedDetentIdentifier != nil {
+                                        sheetController.selectedDetentIdentifier = sheetController.selectedDetentIdentifier
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

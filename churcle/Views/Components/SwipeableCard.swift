@@ -157,7 +157,7 @@ struct SwipeableCard: View {
                     onSwipeRight: onSwipeRight,
                     onMessage: onMessage
                 )
-                .presentationDetents([.fraction(0.9)])
+                .presentationDetents([.fraction(0.95)])
                 .presentationCornerRadius(30)
                 .presentationBackground(Color.black)
             }

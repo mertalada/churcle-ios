@@ -52,9 +52,46 @@ struct ThemeMigrationHelper: ViewModifier {
     }
 }
 
+/// Helper modifier that forces view redraw when theme changes
+struct ForceViewRefreshModifier: ViewModifier {
+    @ObservedObject var themeManager: ThemeManager
+    
+    func body(content: Content) -> some View {
+        content
+            .id(themeManager.viewID)
+    }
+}
+
 extension View {
     /// Apply this modifier to any view that used @AppStorage("isDarkMode")
     func migrateToThemeManager() -> some View {
         self.modifier(ThemeMigrationHelper())
+    }
+    
+    /// Force redraw this view when theme changes
+    func forceRefreshOnThemeChange() -> some View {
+        // This allows default usage without direct reference
+        return EnvironmentThemeManagerReader { themeManager in
+            self.modifier(ForceViewRefreshModifier(themeManager: themeManager))
+        }
+    }
+    
+    /// Force redraw this view when theme changes with a specific ThemeManager
+    func forceRefreshWithThemeManager(_ themeManager: ThemeManager) -> some View {
+        self.modifier(ForceViewRefreshModifier(themeManager: themeManager))
+    }
+}
+
+/// Helper to safely read ThemeManager from environment
+struct EnvironmentThemeManagerReader<Content: View>: View {
+    @EnvironmentObject var themeManager: ThemeManager
+    let content: (ThemeManager) -> Content
+    
+    init(@ViewBuilder content: @escaping (ThemeManager) -> Content) {
+        self.content = content
+    }
+    
+    var body: some View {
+        content(themeManager)
     }
 } 

@@ -3,6 +3,8 @@ import SwiftUI
 struct UserCardView: View {
     let user: User
     @State private var currentPhotoIndex = 0
+    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var themeManager: ThemeManager
     
     // Fotoğraf karuselinde kullanılacak test verileri (şimdilik aynı fotoğraf)
     let photos = [0, 1, 2] // Örnek fotoğraf indeksleri
@@ -93,11 +95,13 @@ struct UserCardView: View {
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .forceRefreshWithThemeManager(themeManager)
         }
     }
 }
 
 #Preview {
     UserCardView(user: User.sampleUsers[0])
+        .environmentObject(ThemeManager())
         .frame(height: 500)
 } 

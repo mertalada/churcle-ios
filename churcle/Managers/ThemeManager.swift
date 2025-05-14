@@ -16,8 +16,14 @@ public class ThemeManager: ObservableObject {
             
             // Update any AppStorage references in the app
             syncAppStorageWithThemeManager()
+            
+            // Increment the viewID to force view refresh
+            self.viewID = UUID()
         }
     }
+    
+    // This UUID changes whenever theme changes to force view refresh
+    @Published public var viewID: UUID = UUID()
     
     public init() {
         // Initialize from UserDefaults
@@ -49,6 +55,13 @@ public class ThemeManager: ObservableObject {
             name: UserDefaults.didChangeNotification,
             object: nil
         )
+        
+        // Directly update ColorEnvironment shared instance
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            // No need to check if it's castable - it's a concrete class
+            ColorEnvironment.shared.isDarkMode = self.isDarkMode
+        }
     }
     
     /// Applies aggressive styling to fix tab bar appearance issues in dark mode
@@ -195,6 +208,37 @@ public class ThemeManager: ObservableObject {
                                        String(describing: type(of: subview)).contains("Background") {
                                         subview.backgroundColor = .black
                                     }
+                                }
+                                
+                                // Prevent automatic dismissal due to theme change
+                                if let sheetController = presentedVC.presentationController as? UISheetPresentationController {
+                                    // Keep the sheet visible during theme changes
+                                    sheetController.largestUndimmedDetentIdentifier = sheetController.selectedDetentIdentifier
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Similar logic for light mode
+                for connectedScene in UIApplication.shared.connectedScenes {
+                    if let windowScene = connectedScene as? UIWindowScene {
+                        for window in windowScene.windows {
+                            if let presentedVC = window.rootViewController?.presentedViewController {
+                                presentedVC.view.backgroundColor = .white
+                                
+                                for subview in presentedVC.view.subviews {
+                                    if subview is UIScrollView || 
+                                       subview is UIStackView || 
+                                       String(describing: type(of: subview)).contains("Background") {
+                                        subview.backgroundColor = .white
+                                    }
+                                }
+                                
+                                // Prevent automatic dismissal due to theme change
+                                if let sheetController = presentedVC.presentationController as? UISheetPresentationController {
+                                    // Keep the sheet visible during theme changes
+                                    sheetController.largestUndimmedDetentIdentifier = sheetController.selectedDetentIdentifier
                                 }
                             }
                         }

@@ -368,7 +368,7 @@ struct ProfileScreen: View {
             }
             .sheet(isPresented: $showDetailSheet) {
                 ProfileInfoSheetView(showEditSheet: $showEditSheet)
-                    .presentationDetents([.fraction(0.9)])
+                    .presentationDetents([.fraction(0.95)])
                     .presentationCornerRadius(30)
                     .presentationBackground(Color.sheetBackground)
                 }
@@ -379,7 +379,7 @@ struct ProfileScreen: View {
             }
         }
     }
-        .background(Color.appBackground)
+        .background(selectedPlan.colors.main)
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(leading: NavigationTitleView(isCenter: true))
