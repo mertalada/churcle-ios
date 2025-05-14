@@ -112,7 +112,7 @@ struct churcleApp: App {
                         }
                     }
                 }
-            }
+                }
         }
     }
 }

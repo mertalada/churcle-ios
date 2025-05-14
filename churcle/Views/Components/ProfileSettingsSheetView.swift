@@ -4,8 +4,18 @@ import UIKit
 // Remove the incorrect import
 // @_exported import class churcle.ThemeManager
 
+// Helper class to make sheet dismissable
+class SheetHostingController: UIHostingController<AnyView> {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Enable dismissal by swipe down
+        isModalInPresentation = false
+    }
+}
+
 struct ProfileSettingsSheetView: View {
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var themeManager: ThemeManager
     @Binding var isSheetShowing: Bool
     
@@ -33,71 +43,127 @@ struct ProfileSettingsSheetView: View {
     }
     
     var body: some View {
-        ZStack {
-            // Theme-appropriate background
-            backgroundColor.edgesIgnoringSafeArea(.all)
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Circle()
+                    .fill(Color.blue)
+                    .frame(width: 10, height: 10)
+                
+                Text("Ayarlar")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
+            .padding(.top, 15)
+            .padding(.bottom, 15)
             
-            NavigationView {
-                List {
-                    Section(header: Text("Hesap")
-                                .foregroundColor(.gray)
-                                .font(.system(size: 14, weight: .medium))) {
-                        SettingsRow(icon: "person.fill", title: "Profil Ayarları")
-                        SettingsRow(icon: "bell.fill", title: "Bildirimler")
-                        SettingsRow(icon: "lock.fill", title: "Gizlilik")
-                    }
-                    .listRowBackground(containerBackgroundColor)
-                    
-                    Section(header: Text("Uygulama")
-                                .foregroundColor(.gray)
-                                .font(.system(size: 14, weight: .medium))) {
-                        SettingsRow(icon: "questionmark.circle.fill", title: "Yardım")
-                        SettingsRow(icon: "info.circle.fill", title: "Hakkında")
+            Divider()
+            
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Account section
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("Hesap")
+                            .font(.headline)
+                            .padding(.horizontal)
                         
-                        // Pass the binding to ThemeSwitchView to prevent dismissal
-                        ThemeSwitchView(keepSheetPresented: $isSheetShowing)
+                        VStack(spacing: 0) {
+                            SettingsRow(icon: "person.fill", title: "Profil Ayarları")
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                            
+                            Divider()
+                                .background(Color.gray.opacity(0.3))
+                                .padding(.horizontal)
+                            
+                            SettingsRow(icon: "bell.fill", title: "Bildirimler")
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                            
+                            Divider()
+                                .background(Color.gray.opacity(0.3))
+                                .padding(.horizontal)
+                            
+                            SettingsRow(icon: "lock.fill", title: "Gizlilik")
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                        }
+                        .background(containerBackgroundColor)
+                        .cornerRadius(15)
+                        .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                radius: 5, x: 0, y: 2)
+                        .padding(.horizontal)
                     }
-                    .listRowBackground(containerBackgroundColor)
                     
+                    // App section
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("Uygulama")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        VStack(spacing: 0) {
+                            SettingsRow(icon: "questionmark.circle.fill", title: "Yardım")
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                            
+                            Divider()
+                                .background(Color.gray.opacity(0.3))
+                                .padding(.horizontal)
+                            
+                            SettingsRow(icon: "info.circle.fill", title: "Hakkında")
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                            
+                            Divider()
+                                .background(Color.gray.opacity(0.3))
+                                .padding(.horizontal)
+                            
+                            // Theme switcher
+                            ThemeSwitchView(keepSheetPresented: $isSheetShowing)
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                        }
+                        .background(containerBackgroundColor)
+                        .cornerRadius(15)
+                        .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                radius: 5, x: 0, y: 2)
+                        .padding(.horizontal)
+                    }
+                    
+                    // Logout button
                     Button(action: {
                         // Logout action
                     }) {
                         Text("Çıkış Yap")
-                            .foregroundColor(.red)
+                            .foregroundColor(.white)
+                            .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color.red)
+                            .cornerRadius(15)
+                            .shadow(color: themeManager.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.1), 
+                                    radius: 5, x: 0, y: 2)
+                            .padding(.horizontal)
                     }
-                    .listRowBackground(containerBackgroundColor)
                     
-                    Button(action: {
-                        // Explicitly close the sheet
-                        isSheetShowing = false
-                    }) {
-                        Text("Kapat")
-                            .foregroundColor(.blue)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .listRowBackground(containerBackgroundColor)
+                    Spacer(minLength: 30)
                 }
-                .listStyle(.insetGrouped)
-                .navigationTitle("Ayarlar")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Kapat") {
-                            isSheetShowing = false
-                        }
-                    }
-                }
-                .scrollContentBackground(.hidden)  // Hide default list background
-                .background(backgroundColor)
-                .id("ProfileSettingsListView-\(themeManager.isDarkMode ? "dark" : "light")")
+                .padding(.top, 20)
             }
-            .background(backgroundColor)
-            .navigationViewStyle(StackNavigationViewStyle())
-            // Force view refresh on theme changes but maintain sheet state
-            .id("ProfileSettingsNavView-\(themeManager.isDarkMode ? "dark" : "light")")
         }
-        .background(backgroundColor)
+        .background(backgroundColor.edgesIgnoringSafeArea(.all))
+    }
+}
+
+struct ProfileSettingsContainer: View {
+    @State private var isSheetPresented = true
+    @EnvironmentObject private var themeManager: ThemeManager
+    
+    var body: some View {
+        Color.clear.sheet(isPresented: $isSheetPresented) {
+            ProfileSettingsSheetView(isSheetShowing: $isSheetPresented)
+                .environmentObject(themeManager)
+        }
     }
 }
 

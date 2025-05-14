@@ -168,33 +168,33 @@ struct MainTabView: View {
                 // Attach sheets to TabView for proper presentation
                 .sheet(isPresented: $showChatSheet) {
                     if let user = selectedChatUser {
-                        ChatSheetView(
-                            user: user,
-                            isPresented: $showChatSheet,
-                            lastMessage: Binding(
-                                get: { lastMessages[user.id] },
-                                set: { lastMessages[user.id] = $0 }
-                            ),
-                            messages: Binding(
-                                get: { messageHistory[user.id] ?? [] },
-                                set: { messageHistory[user.id] = $0 }
-                            )
+                    ChatSheetView(
+                        user: user,
+                        isPresented: $showChatSheet,
+                        lastMessage: Binding(
+                            get: { lastMessages[user.id] },
+                            set: { lastMessages[user.id] = $0 }
+                        ),
+                        messages: Binding(
+                            get: { messageHistory[user.id] ?? [] },
+                            set: { messageHistory[user.id] = $0 }
                         )
+                    )
                         .presentationDetents([.fraction(0.95)])
                         .presentationCornerRadius(30)
                         .presentationBackground(Color.sheetBackground)
-                    }
+            }
                 }
                 .sheet(isPresented: $isMessageSheetPresented) {
                     if let selectedMessageUser = selectedMessageUser {
-                        MessageSheetView(
-                            user: selectedMessageUser,
-                            isPresented: $isMessageSheetPresented
-                        )
+                    MessageSheetView(
+                        user: selectedMessageUser,
+                        isPresented: $isMessageSheetPresented
+                    )
                         .presentationDetents([.fraction(0.95)])
                         .presentationCornerRadius(30)
                         .presentationBackground(Color.sheetBackground)
-                    }
+                }
                 }
             }
             .zIndex(0) // Lower ZIndex for the TabView
