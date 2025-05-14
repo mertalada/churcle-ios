@@ -52,6 +52,11 @@ struct ProfileScreen: View {
             }
         }
     }
+
+        // Container arka plan rengi
+    var containerBackgroundColor: Color {
+        return themeManager.isDarkMode ? Color(red: 0.1, green: 0.1, blue: 0.1).opacity(0.6) : Color.white
+    }
     
     var body: some View {
         NavigationView {
@@ -313,35 +318,35 @@ struct ProfileScreen: View {
                             .cornerRadius(12)
                             .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 4)
                             .padding(.horizontal)
-                        
-                            // Plan comparison section
+
                             VStack(spacing: 24) {
                                 Text("Plan Karşılaştırması")
-                                    .font(.headline)
+                                    .font(.title3)
+                                    .fontWeight(.bold)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                // Comparison rows
-                                ComparisonRow(feature: "Günlük Beğeni", basic: "25", gold: "Sınırsız", platinum: "Sınırsız")
-                                ComparisonRow(feature: "Süper Beğeni", basic: "1/gün", gold: "5/gün", platinum: "10/gün")
-                                ComparisonRow(feature: "Boost", basic: "-", gold: "1/ay", platinum: "3/ay")
-                                ComparisonRow(feature: "Geri Alma", basic: "-", gold: "✓", platinum: "✓")
-                                ComparisonRow(feature: "Direkt Mesaj", basic: "-", gold: "-", platinum: "✓")
-                                
-                                // Show all features button
-                                Button(action: {
-                                    // Show all features action
-                                }) {
-                                    Text("Tüm Özellikleri Gör")
-                                        .font(.system(size: 15, weight: .medium))
-                                        .foregroundColor(.blue)
-                                        .padding(.vertical, 12)
+                                    .padding(.horizontal)
+                             }   
+                             .padding(.top, 24)
+                        
+                            // Plan comparison section
+                            VStack(spacing: 0) {
+                                VStack(spacing: 24) {
+                                    // Comparison rows
+                                    VStack {
+                                        ComparisonRow(feature: "Günlük Beğeni", basic: "25", gold: "Sınırsız", platinum: "Sınırsız")
+                                        ComparisonRow(feature: "Süper Beğeni", basic: "1/gün", gold: "5/gün", platinum: "10/gün")
+                                        ComparisonRow(feature: "Boost", basic: "-", gold: "1/ay", platinum: "3/ay")
+                                        ComparisonRow(feature: "Geri Alma", basic: "-", gold: "✓", platinum: "✓")
+                                        ComparisonRow(feature: "Direkt Mesaj", basic: "-", gold: "-", platinum: "✓")
+                                    }
+                                    .padding()
                                 }
+                                .background(themeManager.isDarkMode ? Color.black : Color.white)
+                                .cornerRadius(12)
+                                .padding(.horizontal)
                             }
-                            .padding()
-                            .background(themeManager.isDarkMode ? Color.black : Color.white)
                             .cornerRadius(12)
-                            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-                            .padding(.horizontal)
+                            .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 4)
                         }
                         .padding(.vertical, 10)
                     }

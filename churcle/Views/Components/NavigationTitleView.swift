@@ -73,7 +73,7 @@ struct NavigationTitleView: View {
             }
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.bottom, 6)
         .background(themeManager.isDarkMode ? Color.black : Color.white)
     }
 }
@@ -86,7 +86,7 @@ struct SettingsRow: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.blue)
+                .foregroundColor(.blue) 
                 .frame(width: 30)
             Text(title)
             Spacer()
@@ -98,8 +98,9 @@ struct SettingsRow: View {
 }
 
 #Preview {
+    
     let themeManager = ThemeManager()
-    return VStack(spacing: 20) {
+     VStack(spacing: 20) {
         NavigationTitleView(settingsType: .profile)
             .padding()
             .background(Color.black)

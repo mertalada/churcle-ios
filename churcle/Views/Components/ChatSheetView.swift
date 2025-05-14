@@ -90,7 +90,6 @@ struct ChatSheetView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
-                .padding(.bottom, 30)
             }
             .background(Color.sheetBackground)
         }

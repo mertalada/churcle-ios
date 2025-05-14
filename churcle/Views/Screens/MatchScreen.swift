@@ -21,7 +21,6 @@ struct MatchScreen: View {
                             selectedTab = 1
                         }
                     }
-                    .background(Color(UIColor.darkGray).opacity(0.5))
                     .cornerRadius(8)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
@@ -92,12 +91,12 @@ struct TabButton: View {
             Text(title)
                 .font(.system(size: 14))
                 .fontWeight(isSelected ? .bold : .regular)
-                .foregroundColor(isSelected ? .white : .gray)
+                .foregroundColor(isSelected ? .white : .black)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 16)
                 .frame(maxWidth: .infinity)
-                .background(isSelected ? Color.black.opacity(0.6) : Color.clear)
-                .cornerRadius(6)
+                .background(isSelected ? Color(red: 33 / 255, green: 208 / 255, blue: 3 / 255) : Color.gray.opacity(0.5))
+                .cornerRadius(8)
         }
     }
 }

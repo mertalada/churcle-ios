@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeScreen: View {
+    @EnvironmentObject private var themeManager: ThemeManager
     @State private var users = User.sampleUsers
     @State private var currentIndex = 0
     @State private var cardOffset = CGSize.zero
@@ -17,6 +18,13 @@ struct HomeScreen: View {
     
     private var hasCards: Bool {
         currentIndex < users.count
+    }
+
+        // Container arka plan rengi
+    var containerBackgroundColor: Color {
+        return themeManager.isDarkMode
+            ? Color(red: 0.1, green: 0.1, blue: 0.1).opacity(0.6)
+            : Color(UIColor(red: 245/255, green: 245/255, blue: 247/255, alpha: 1.0))
     }
     
     var body: some View {
@@ -121,6 +129,7 @@ struct HomeScreen: View {
                         NavigationTitleView(settingsType: .options)
                     }
                 }
+                .background(containerBackgroundColor)
                 
                 // Chat Sheet'i göster
                 if showChatSheet, let user = selectedChatUser {

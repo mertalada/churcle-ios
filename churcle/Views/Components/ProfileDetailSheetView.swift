@@ -23,12 +23,6 @@ struct ProfileDetailSheetView: View {
                 .edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 0) {
-                // Handle at the top
-                RoundedRectangle(cornerRadius: 2.5)
-                    .fill(Color.gray.opacity(0.6))
-                    .frame(width: 40, height: 5)
-                    .padding(.top, 10)
-                    .padding(.bottom, 10)
                 
                 // Main content
                 ScrollView(showsIndicators: false) {

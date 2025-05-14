@@ -24,33 +24,40 @@ struct ProfileEditSheetView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Button("Vazgeç") {
+                // Sol tarafta vazgeç
+                Button(action: {
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Vazgeç")
+                        .font(.body) // Aynı yazı tipi ve boyutta tut
+                        .foregroundColor(.red)
                 }
-                .foregroundColor(.red)
-                .padding(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Spacer()
-                
+                // Ortada başlık
                 Text("Düzenle")
                     .font(.headline)
                     .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 
-                Spacer()
-                
-                Button("Bitti") {
+                // Sağda bitti
+                Button(action: {
                     // Save changes
                     userProfile.city = cityText
                     userProfile.school = schoolText
                     userProfile.education = selectedEducation
                     userProfile.lookingFor = selectedLookingFor
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Bitti")
+                        .font(.body)
+                        .foregroundColor(.blue)
                 }
-                .foregroundColor(.blue)
-                .padding(.trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .padding(.top, 15)
-            .padding(.bottom, 15)
+            .padding(.vertical, 15)
+            .padding(.horizontal)
+
             
             Divider()
             

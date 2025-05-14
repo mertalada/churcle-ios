@@ -9,16 +9,8 @@ struct ProfileInfoSheetView: View {
     @Binding var showEditSheet: Bool
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 2.5)
-                .fill(Color.gray.opacity(0.6))
-                .frame(width: 40, height: 5)
-                .padding(.top, 10)
                 
         ZStack(alignment: .top) {
-            // background for entire view
-            Color(themeManager.isDarkMode ? .black : .white)
-                .edgesIgnoringSafeArea(.all)
-            
             // Main content
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {

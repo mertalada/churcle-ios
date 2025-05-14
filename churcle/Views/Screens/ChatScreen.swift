@@ -24,7 +24,7 @@ struct ChatScreen: View {
                                             .aspectRatio(contentMode: .fill)
                                             .frame(width: 80, height: 80)
                                             .clipShape(Circle())
-                                            .overlay(Circle().stroke(Color(red: 212/255, green: 175/255, blue: 55/255), lineWidth: 2))
+                                            .overlay(Circle().stroke(Color(red: 33 / 255, green: 208 / 255, blue: 3 / 255), lineWidth: 2))
                                         Text(user.name)
                                             .font(.caption)
                                             .foregroundColor(.primary)
