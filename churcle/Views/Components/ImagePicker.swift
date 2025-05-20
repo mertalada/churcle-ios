@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import UniformTypeIdentifiers
 
 struct ImagePicker: UIViewControllerRepresentable {
     var selectedImage: (UIImage?) -> Void
@@ -36,11 +37,56 @@ struct ImagePicker: UIViewControllerRepresentable {
                 return
             }
             
-            itemProvider.loadObject(ofClass: UIImage.self) { image, error in
-                DispatchQueue.main.async {
-                    self.parent.selectedImage(image as? UIImage)
+            // Use a more reliable method to load the image
+            if itemProvider.canLoadObject(ofClass: UIImage.self) {
+                itemProvider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+                    if let error = error {
+                        print("Error loading image: \(error.localizedDescription)")
+                        DispatchQueue.main.async {
+                            self?.parent.selectedImage(nil)
+                        }
+                        return
+                    }
+                    
+                    DispatchQueue.main.async {
+                        if let uiImage = image as? UIImage {
+                            // Normalize the image orientation
+                            let normalizedImage = self?.normalizeImageOrientation(uiImage)
+                            self?.parent.selectedImage(normalizedImage)
+                        } else {
+                            self?.parent.selectedImage(nil)
+                        }
+                    }
+                }
+            } else if itemProvider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
+                // Fallback to loading the data and creating an image from it
+                itemProvider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { [weak self] data, error in
+                    if let data = data, let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            let normalizedImage = self?.normalizeImageOrientation(image)
+                            self?.parent.selectedImage(normalizedImage)
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            self?.parent.selectedImage(nil)
+                        }
+                    }
                 }
             }
+        }
+        
+        // Helper function to fix image orientation
+        private func normalizeImageOrientation(_ image: UIImage) -> UIImage {
+            if image.imageOrientation == .up {
+                return image
+            }
+            
+            UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)
+            image.draw(in: CGRect(origin: .zero, size: image.size))
+            let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            
+            return normalizedImage ?? image
         }
     }
 } 

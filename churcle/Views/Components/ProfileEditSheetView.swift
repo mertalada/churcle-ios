@@ -1,9 +1,70 @@
 import SwiftUI
 import PhotosUI
+import UIKit
+
+// Using UIKit image picker directly (simpler approach)
+struct DirectImagePicker: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
+    var onSelectImage: (UIImage) -> Void
+    
+    func makeUIViewController(context: Context) -> UIViewController {
+        let controller = UIViewController()
+        DispatchQueue.main.async {
+            let picker = UIImagePickerController()
+            picker.sourceType = .photoLibrary
+            picker.delegate = context.coordinator
+            controller.present(picker, animated: true)
+        }
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: DirectImagePicker
+        
+        init(_ parent: DirectImagePicker) {
+            self.parent = parent
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            picker.dismiss(animated: true) {
+                self.parent.isPresented = false
+                
+                if let image = info[.originalImage] as? UIImage {
+                    // Process image to avoid file system access issues
+                    let size = CGSize(width: image.size.width, height: image.size.height)
+                    UIGraphicsBeginImageContextWithOptions(size, false, 1.0)
+                    image.draw(in: CGRect(origin: .zero, size: size))
+                    let processedImage = UIGraphicsGetImageFromCurrentImageContext()
+                    UIGraphicsEndImageContext()
+                    
+                    if let finalImage = processedImage {
+                        DispatchQueue.main.async {
+                            self.parent.onSelectImage(finalImage)
+                        }
+                    }
+                }
+            }
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            picker.dismiss(animated: true) {
+                self.parent.isPresented = false
+            }
+        }
+    }
+}
 
 struct ProfileEditSheetView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var userProfile = UserProfile.shared
+    
+    // Main state
     @State private var smartPhotosEnabled = false
     @State private var bio = "Kendini ortaya koymaktan çekinme. Özgün olmak cazibelidir."
     @State private var selectedEducation = "Üniversite Mezunları"
@@ -14,33 +75,55 @@ struct ProfileEditSheetView: View {
     @State private var schoolText = "İstanbul Üniversitesi"
     @State private var workplaceText = ""
     @State private var selectedPickerIndex: Int?
-    @State private var showingImagePicker = false
     @State private var draggingItem: PhotoItem?
+    
+    // Image handling state
+    @State private var showingImagePicker = false
+    @State private var selectedImage: UIImage?
+    @State private var showingCrop = false
     
     let interestOptions = ["Spor", "Müzik", "Seyahat", "Yemek", "Sinema", "Kitap", "Sanat", "Dans", "Fotoğrafçılık", "Doğa", "Teknoloji", "Oyun"]
     let lookingForOptions = ["friends", "married", "relationship", "hanging out", "undecided"]
     
     var body: some View {
+        ZStack {
+            // Main content
+            mainContent
+            
+            // Overlay the crop view when active
+            if showingCrop, let image = selectedImage {
+                cropView(for: image)
+                    .edgesIgnoringSafeArea(.all)
+                    .transition(.opacity)
+            }
+        }
+        .onChange(of: showingImagePicker) { _, isShowing in
+            // Reset if picker is dismissed without selection
+            if !isShowing && selectedImage == nil {
+                showingCrop = false
+            }
+        }
+    }
+    
+    // Main content view
+    var mainContent: some View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                // Sol tarafta vazgeç
                 Button(action: {
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Vazgeç")
-                        .font(.body) // Aynı yazı tipi ve boyutta tut
+                        .font(.body)
                         .foregroundColor(.red)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
-                // Ortada başlık
                 Text("Düzenle")
                     .font(.headline)
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
-                // Sağda bitti
                 Button(action: {
                     // Save changes
                     userProfile.city = cityText
@@ -57,7 +140,6 @@ struct ProfileEditSheetView: View {
             }
             .padding(.vertical, 15)
             .padding(.horizontal)
-
             
             Divider()
             
@@ -67,7 +149,6 @@ struct ProfileEditSheetView: View {
                 VStack(spacing: 20) {
                     // Media section
                     HStack {
-                        // Red dot
                         Circle()
                             .fill(Color.red)
                             .frame(width: 10, height: 10)
@@ -115,6 +196,7 @@ struct ProfileEditSheetView: View {
                         ForEach(0..<(9 - userProfile.photos.count), id: \.self) { index in
                             Button(action: {
                                 selectedPickerIndex = userProfile.photos.count + index
+                                selectedImage = nil // Clear any previously selected image
                                 showingImagePicker = true
                             }) {
                                 PhotoPlaceholderCell()
@@ -324,39 +406,47 @@ struct ProfileEditSheetView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingImagePicker) {
-                ImagePicker(selectedImage: { selectedImage in
-                    if let selectedImage = selectedImage, let index = selectedPickerIndex {
-                        let newPhotoItem = PhotoItem(image: selectedImage)
-                        
-                        if index < userProfile.photos.count {
-                            userProfile.photos[index] = newPhotoItem
-                        } else {
-                            userProfile.photos.append(newPhotoItem)
+        }
+        .overlay(
+            Group {
+                if showingImagePicker {
+                    DirectImagePicker(
+                        isPresented: $showingImagePicker,
+                        onSelectImage: { selectedImage in
+                            self.selectedImage = selectedImage
+                            self.showingCrop = true
                         }
-                    }
-                })
+                    )
+                    .allowsHitTesting(false)
+                    .frame(width: 0, height: 0)
+                }
             }
-        }
-        .onAppear {
-            // Profil verilerini görünüme aktar
-            selectedInterests = userProfile.interests
-            selectedLookingFor = userProfile.lookingFor
-            cityText = userProfile.city
-            schoolText = userProfile.school
-            selectedEducation = userProfile.education
-            workplaceText = userProfile.workplace
-        }
-        .onDisappear {
-            // Görünümden çıkarken verileri profil nesnesine kaydet
-            userProfile.interests = selectedInterests
-            userProfile.lookingFor = selectedLookingFor
-            userProfile.city = cityText
-            userProfile.school = schoolText
-            userProfile.education = selectedEducation
-            userProfile.horoscope = selectedZodiac
-            userProfile.workplace = workplaceText
-        }
+        )
+    }
+    
+    // Crop view
+    func cropView(for image: UIImage) -> some View {
+        AspectCropView(
+            sourceImage: image,
+            onCrop: { croppedImage in
+                if let index = selectedPickerIndex {
+                    let newPhotoItem = PhotoItem(image: croppedImage)
+                    
+                    if index < userProfile.photos.count {
+                        userProfile.photos[index] = newPhotoItem
+                    } else {
+                        userProfile.photos.append(newPhotoItem)
+                    }
+                }
+                showingCrop = false
+                selectedImage = nil
+            },
+            onCancel: {
+                showingCrop = false
+                selectedImage = nil
+            }
+        )
+        .zIndex(100) // Ensure it's above everything else
     }
     
     // Shuffle photos when smart photos is enabled
